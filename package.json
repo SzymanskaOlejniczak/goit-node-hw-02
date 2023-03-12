@@ -24,5 +24,12 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "5.2.0",
     "nodemon": "2.0.15"
-  }
+  },
+  "main": ".eslintrc.js",
+  "repository": {
+    "type":"git",
+    "url": "git+https://github.com/SzymanskaOlejniczak/goit-node-hw-02.git"
+  },
+  "homepage": " https://szymanskaolejniczak.github.io/goit-node-hw-02/"
+
 }
