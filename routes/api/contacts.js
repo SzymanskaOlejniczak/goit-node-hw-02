@@ -26,7 +26,6 @@ router.get("/:contactId", async (req, res, next) => {
   res.json(response);
 });
 
-
 router.post("/", async (req, res, next) => {
   try {
     const { error, value } = validateCreateContact(req.body);
