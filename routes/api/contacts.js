@@ -10,7 +10,7 @@ const {
 const {
   validateCreateContact,
   validateUpdateContact,
-} = require("../../validator");
+} = require("../../models/validator");
 
 router.get("/", async (req, res, next) => {
   const contacts = await listContacts();
