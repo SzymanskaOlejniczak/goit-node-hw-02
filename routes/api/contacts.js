@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 const {
   listContacts,
   getContactById,
@@ -11,8 +12,6 @@ const {
   validateUpdateContact,
 } = require("../../validator");
 
-const router = express.Router();
-
 router.get("/", async (req, res, next) => {
   const contacts = await listContacts();
   res.json(contacts);
@@ -22,18 +21,25 @@ router.get("/:contactId", async (req, res, next) => {
   const id = req.params.contactId;
   const response = await getContactById(id);
   if (!response) {
-    res.status(404).json({ message: "Contact with ${id} was not found." });
+    res.status(404).json({ message: "Not found." });
   }
   res.json(response);
 });
 
+
 router.post("/", async (req, res, next) => {
-  const { error, value } = validateCreateContact(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.message });
+  try {
+    const { error, value } = validateCreateContact(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+    const newList = await addContact(req.body);
+
+    res.status(201).json(newList);
+  } catch (error) {
+    next(error);
+    return res.status(500).json({ message: "Server error" });
   }
-  const newList = await addContact(req.body);
-  res.status(201).json(newList);
 });
 
 router.delete("/:contactId", async (req, res, next) => {
