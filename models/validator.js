@@ -1,5 +1,24 @@
 const Joi = require("joi");
 const JoiPhoneValidate = Joi.extend(require("joi-phone-number"));
+const mongoose = require("mongoose");
+const Schema= mongoose.Schema;
+
+const contactSchema=new Schema({
+  name: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+});
+const Contact = mongoose.model("Contact", contactSchema);
 
 const validator = (schema) => (payload) =>
   schema.validate(payload, { abortEarly: false });
@@ -10,13 +29,37 @@ const schemaCreateContact = Joi.object({
   phone: JoiPhoneValidate.string()
     .phoneNumber({ format: "international" })
     .required(),
+  favorite:Joi.boolean(),
 });
 
 const schemaUpdateContact = Joi.object({
-  name: Joi.string().min(3).max(30),
-  email: Joi.string().email(),
-  phone: JoiPhoneValidate.string().phoneNumber({ format: "international" }),
-}).min(1);
+  name: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email().required(),
+  phone: JoiPhoneValidate.string()
+  .phoneNumber({ 
+    defaultCountry: "PL",
+    format: "international",
+  })
+  .required(),
+  favorite: Joi.boolean().required(),
+});
+const schemaStatusUpdateContact = Joi.object({
+  favorite: Joi.boolean().required(),
+});
 
-exports.validateCreateContact = validator(schemaCreateContact);
-exports.validateUpdateContact = validator(schemaUpdateContact);
+const idSchema = Joi.object({
+  contactId: Joi.string().alphanum().length(24),
+});
+
+const validateCreateContact = validator(schemaCreateContact);
+const validateUpdateContact = validator(schemaUpdateContact);
+const validateStatusUpdateContact = validator(schemaStatusUpdateContact);
+const validateIdContact = validator(idSchema);
+
+module.exports = {
+  Contact,
+  validateCreateContact,
+  validateUpdateContact,
+  validateStatusUpdateContact,
+  validateIdContact,
+};
