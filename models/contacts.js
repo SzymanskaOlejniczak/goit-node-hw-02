@@ -1,17 +1,16 @@
-
-const {Contact}=require('./validator');
+const { Contact } = require("./validator");
 
 const listContacts = async () => {
   return await Contact.find();
 };
 
 const getContactById = async (_id) => {
-  return await Contact.findOne({_id});
+  return await Contact.findOne({ _id });
 };
 
 const removeContact = async (_id) => {
-  await Contact.findOneAndDelete({_id})
-  };
+  await Contact.findOneAndDelete({ _id });
+};
 
 const addContact = async (body) => {
   const list = new Contact(body);
