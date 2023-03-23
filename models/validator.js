@@ -1,9 +1,9 @@
 const Joi = require("joi");
 const JoiPhoneValidate = Joi.extend(require("joi-phone-number"));
 const mongoose = require("mongoose");
-const Schema= mongoose.Schema;
+const Models = mongoose.Schema;
 
-const contactSchema=new Schema({
+const contactSchema = new Models({
   name: {
     type: String,
   },
@@ -29,18 +29,18 @@ const schemaCreateContact = Joi.object({
   phone: JoiPhoneValidate.string()
     .phoneNumber({ format: "international" })
     .required(),
-  favorite:Joi.boolean(),
+  favorite: Joi.boolean(),
 });
 
 const schemaUpdateContact = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
   phone: JoiPhoneValidate.string()
-  .phoneNumber({ 
-    defaultCountry: "PL",
-    format: "international",
-  })
-  .required(),
+    .phoneNumber({
+      defaultCountry: "PL",
+      format: "international",
+    })
+    .required(),
   favorite: Joi.boolean().required(),
 });
 const schemaStatusUpdateContact = Joi.object({
