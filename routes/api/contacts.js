@@ -23,7 +23,9 @@ const idValidation = async (req, res, next) => {
   }
   const contact = await getContactById(contactId);
   if (!contact) {
-    return res.status(404).json({ message: `Contact with id=${contactId} was not found.` });
+    return res
+      .status(404)
+      .json({ message: `Contact with id=${contactId} was not found.` });
   }
   next();
 };
@@ -31,22 +33,22 @@ const idValidation = async (req, res, next) => {
 router.get("/", async (req, res, next) => {
   try {
     const contacts = await listContacts();
-  res.json(contacts);
+    res.json(contacts);
   } catch (error) {
     next(error);
-    return res.status(500).json({message:'Server error'});
+    return res.status(500).json({ message: "Server error" });
   }
 });
 
-router.get("/:contactId", async (req, res, next) => {
-  try { 
-  const {contactId} = req.params;
-  const contact = await getContactById(contactId);
-  res.status(200).json(contact);
-} catch (error) {
-  next(error);
-  return res.status(500).json({ message: "Server error" });
-}
+router.get("/:contactId", idValidation, async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const contact = await getContactById(contactId);
+    res.status(200).json(contact);
+  } catch (error) {
+    next(error);
+    return res.status(500).json({ message: "Server error" });
+  }
 });
 
 router.post("/", async (req, res, next) => {
@@ -57,35 +59,36 @@ router.post("/", async (req, res, next) => {
     }
     const newList = await addContact(req.body);
 
-    res.status(201).json(newList);
+    res.status(200).json(newList);
   } catch (error) {
     next(error);
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
- try { 
-  const {contactId } = req.params;
-  await removeContact(ContactId);
-  res.status(200).json({ message: `Contact with id=${contactId} was deleted.` });
-  } catch (error) {
-    next(error);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.put("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", idValidation, async (req, res, next) => {
   try {
-  const { contactId} = req.params;
-
-  const { error} = validateUpdateContact(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.message });
+    const { contactId } = req.params;
+    await removeContact(contactId);
+    res
+      .status(200)
+      .json({ message: `Contact with id=${contactId} was deleted.` });
+  } catch (error) {
+    next(error);
+    return res.status(500).json({ message: "Server error" });
   }
+});
 
-  const contact = await updateContact(contactId, req.body);
-  res.status(200).json(contact);
+router.put("/:contactId", idValidation, async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const { error } = validateUpdateContact(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    const contact = await updateContact(contactId, req.body);
+    res.status(200).json(contact);
   } catch (error) {
     next(error);
     return res.status(500).json({ message: "Server error" });
