@@ -102,7 +102,7 @@ router.patch("/:contactId/favorite", idValidation, async (req, res, next) => {
     if (error) {
       return res.status(400).json({ message: error.message });
     }
-    const contact = await updateContactStatus(contactId, req.body);
+    const contact = await updateContactStatus(contactId, req.body.favorite);
     res.status(200).json(contact);
   } catch (error) {
     next(error);
