@@ -1,50 +1,31 @@
-const fs = require("fs/promises");
+const { Contact } = require("./validator");
 
 const listContacts = async () => {
-  const data = await fs.readFile("./models/contacts.json", "utf-8");
-  const parsedData = JSON.parse(data);
-
-  return parsedData;
+  return await Contact.find();
 };
 
-const getContactById = async (contactId) => {
-  const list = await listContacts();
-  const foundContact = list.find((item) => item.id == contactId);
-
-  return foundContact;
+const getContactById = async (_id) => {
+  return await Contact.findOne({ _id });
 };
 
-const removeContact = async (contactId) => {
-  const list = await listContacts();
-  const tableIndex = list.findIndex((item) => item.id === contactId);
-  if (tableIndex === -1) {
-    return null;
-  }
-  const [contact] = list.splice(tableIndex, 1);
-  await fs.writeFile("./contacts.json", JSON.stringify(list));
-
-  return contact;
+const removeContact = async (_id) => {
+  await Contact.findOneAndDelete({ _id });
 };
 
 const addContact = async (body) => {
-  const list = await listContacts();
-  const newList = { id: list.length + 1, ...body };
-  list.push(newList);
-  await fs.writeFile("./contacts.json", JSON.stringify(list));
-
-  return newList;
+  const list = new Contact(body);
+  await list.save();
+  return list;
 };
 
-const updateContact = async (contactId, body) => {
-  const list = await listContacts();
-  const tableIndex = list.findIndex((item) => item.id === contactId);
-  if (tableIndex === -1) {
-    return null;
-  }
-  list[tableIndex] = { ...list[tableIndex], ...body };
-  await fs.writeFile("./contacts.json", JSON.stringify(list));
+const updateContact = async (_id, body) => {
+  await Contact.findByIdAndUpdate(_id, body);
+  return await getContactById(_id);
+};
 
-  return list[tableIndex];
+const updateContactStatus = async (_id, body) => {
+  await Contact.findByIdAndUpdate(_id, body);
+  return await getContactById(_id);
 };
 
 module.exports = {
@@ -53,4 +34,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateContactStatus,
 };

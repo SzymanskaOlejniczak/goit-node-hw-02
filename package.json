@@ -11,8 +11,11 @@
   "dependencies": {
     "cors": "2.8.5",
     "cross-env": "7.0.3",
+    "dotenv": "^16.0.3",
     "express": "4.17.1",
     "joi": "^17.8.3",
+    "joi-phone-number": "^5.1.1",
+    "mongoose": "^7.0.2",
     "morgan": "1.10.0",
     "uuid": "^9.0.0"
   },
@@ -27,9 +30,8 @@
   },
   "main": ".eslintrc.js",
   "repository": {
-    "type":"git",
+    "type": "git",
     "url": "git+https://github.com/SzymanskaOlejniczak/goit-node-hw-02.git"
   },
   "homepage": " https://szymanskaolejniczak.github.io/goit-node-hw-02/"
-
 }
