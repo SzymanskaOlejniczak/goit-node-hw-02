@@ -1,38 +1,65 @@
-const { Contact } = require("./validator");
+const Joi = require("joi");
+const JoiPhoneValidate = Joi.extend(require("joi-phone-number"));
+const mongoose = require("mongoose");
+const Models = mongoose.Schema;
 
-const listContacts = async () => {
-  return await Contact.find();
-};
+const contactSchema = new Models({
+  name: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+});
+const Contact = mongoose.model("Contact", contactSchema);
 
-const getContactById = async (_id) => {
-  return await Contact.findOne({ _id });
-};
+const validator = (schema) => (payload) =>
+  schema.validate(payload, { abortEarly: false });
 
-const removeContact = async (_id) => {
-  await Contact.findOneAndDelete({ _id });
-};
+const schemaCreateContact = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email().required(),
+  phone: JoiPhoneValidate.string()
+    .phoneNumber({ format: "international" })
+    .required(),
+  favorite: Joi.boolean(),
+});
 
-const addContact = async (body) => {
-  const list = new Contact(body);
-  await list.save();
-  return list;
-};
+const schemaUpdateContact = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email().required(),
+  phone: JoiPhoneValidate.string()
+    .phoneNumber({
+      defaultCountry: "PL",
+      format: "international",
+    })
+    .required(),
+  favorite: Joi.boolean().required(),
+});
+const schemaStatusUpdateContact = Joi.object({
+  favorite: Joi.boolean().required(),
+});
 
-const updateContact = async (_id, body) => {
-  await Contact.findByIdAndUpdate(_id, body);
-  return await getContactById(_id);
-};
+const idSchema = Joi.object({
+  contactId: Joi.string().alphanum().length(24),
+});
 
-const updateContactStatus = async (_id, body) => {
-  await Contact.findByIdAndUpdate(_id, body);
-  return await getContactById(_id);
-};
+const validateCreateContact = validator(schemaCreateContact);
+const validateUpdateContact = validator(schemaUpdateContact);
+const validateStatusUpdateContact = validator(schemaStatusUpdateContact);
+const validateIdContact = validator(idSchema);
 
 module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-  updateContactStatus,
+  Contact,
+  validateCreateContact,
+  validateUpdateContact,
+  validateStatusUpdateContact,
+  validateIdContact,
 };
