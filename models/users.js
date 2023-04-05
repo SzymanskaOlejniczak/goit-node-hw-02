@@ -38,8 +38,7 @@ const hashPassword = (password) => {
   // generujemy salta (salt to "wkladka" dla algorytmu haszujacego)
   const salt = bcrypt.genSaltSync(10);
   // haszujemy przychodzace haslo
-  const hashedPassword = bcrypt.hashSync(password, salt);
-  return hashedPassword;
+  return bcrypt.hashSync(password, salt);
 };
 
 // zainicjowalismy model obiektu
@@ -47,9 +46,9 @@ const User = mongoose.model("User", users);
 const validator = (schema) => (payload) => schema.validate(payload, { abortEarly: false });
 
 const userValidationSchema = Joi.object({
-  email: Joi.string().required().email(),
-  password: Joi.string().required().min(6),
-  //subscription: Joi.string().valid("starter", "pro", "business"),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+  subscription: Joi.string().valid("starter", "pro", "business"),
 });
 const userUpdatedValidationSchema = Joi.object({
   subscription: Joi.string().valid("starter", "pro", "business").required(),
