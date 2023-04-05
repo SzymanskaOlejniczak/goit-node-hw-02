@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const dbpath = process.env.MONGO_SECRET;
 
+
 if (!dbpath) {
   console.log("Database path is not defined");
 }
