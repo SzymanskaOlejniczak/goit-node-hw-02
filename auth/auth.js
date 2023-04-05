@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 const  {getUserByEmail}  = require("../conrollers/users");
 
-const jwtSecret = process.env.JWT_SECRET;
+const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
 const auth = async(req, res, next) => {
   // pobieramy token z nagłówka
   const token = req.headers.authorization;
+  
 
   // jeśli nie ma tokenu to nie puszamy dalej - mowimy ze brak tokenu
   if (!token) {
@@ -14,7 +15,7 @@ const auth = async(req, res, next) => {
 
   // jesli token jest to go weryfikujemy
   try {
-    jwt.verify(token, jwtSecret);
+    jwt.verify(token, jwtSecretKey);
     req.user = jwt.decode(token);
     // jesli wszystko poszło okay to wywołujemy next function
     try {
