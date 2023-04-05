@@ -1,12 +1,11 @@
 const jwt = require("jsonwebtoken");
-const  {getUserByEmail}  = require("../conrollers/users");
+const { getUserByEmail } = require("../conrollers/users");
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
-const auth = async(req, res, next) => {
+const auth = async (req, res, next) => {
   // pobieramy token z nagłówka
   const token = req.headers.authorization;
-  
 
   // jeśli nie ma tokenu to nie puszamy dalej - mowimy ze brak tokenu
   if (!token) {
@@ -26,7 +25,7 @@ const auth = async(req, res, next) => {
     } catch (error) {
       return res.status(401).json({ message: "Not authorized" });
     }
-   
+
     next();
   } catch {
     // jesli cos nie tak to odmawiamy dostepu
