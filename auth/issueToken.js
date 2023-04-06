@@ -3,16 +3,16 @@ const jwt = require("jsonwebtoken");
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
 const issueToken = (user) => {
-  // ustalamy nasz payload (informacje ktore dodatkowo checmy zawrzec w tokenie)
+  // set our payload (information that we also want to include in the token)
   const payload = {
     id: user._id,
     email: user.email,
   };
 
-  // tworzymy nasz token (podpisujemy)
+  // create our token (sign)
   const token = jwt.sign(payload, jwtSecretKey);
 
-  // zwracamy token
+ // we return the token
   return token;
 };
 
