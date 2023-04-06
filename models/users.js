@@ -2,7 +2,6 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-
 // wyciągneliśmy schema z bilbioteki
 const Schema = mongoose.Schema;
 
@@ -43,7 +42,8 @@ const hashPassword = (password) => {
 
 // zainicjowalismy model obiektu
 const User = mongoose.model("User", users);
-const validator = (schema) => (payload) => schema.validate(payload, { abortEarly: false });
+const validator = (schema) => (payload) =>
+  schema.validate(payload, { abortEarly: false });
 
 const userValidationSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -56,9 +56,9 @@ const userUpdatedValidationSchema = Joi.object({
 const validateCreateUser = validator(userValidationSchema);
 const validateUpdateUser = validator(userUpdatedValidationSchema);
 
-module.exports = { 
+module.exports = {
   User,
   validateCreateUser,
   validateUpdateUser,
   hashPassword,
- };
+};
