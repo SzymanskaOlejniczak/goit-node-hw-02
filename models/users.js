@@ -2,10 +2,10 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-// wyciągneliśmy schema z bilbioteki
+// we pulled the schema from the library
 const Schema = mongoose.Schema;
 
-// zdefiniowalismy schema
+// we defined the schema
 const users = new Schema(
   {
     email: {
@@ -34,13 +34,13 @@ const users = new Schema(
 );
 
 const hashPassword = (password) => {
-  // generujemy salta (salt to "wkladka" dla algorytmu haszujacego)
+  // generate salts (salt is an "insert" for the hashing algorithm)
   const salt = bcrypt.genSaltSync(10);
   // haszujemy przychodzace haslo
   return bcrypt.hashSync(password, salt);
 };
 
-// zainicjowalismy model obiektu
+// we initialized the object model
 const User = mongoose.model("User", users);
 const validator = (schema) => (payload) =>
   schema.validate(payload, { abortEarly: false });
