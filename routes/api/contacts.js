@@ -7,14 +7,14 @@ const {
   removeContact,
   updateContact,
   updateContactStatus,
-} = require("../../models/contacts");
+} = require("../../conrollers/contacts");
 const {
   validateCreateContact,
   validateUpdateContact,
   validateStatusUpdateContact,
   validateIdContact,
-} = require("../../models/validator");
-
+} = require("../../models/contacts");
+const auth = require("../../auth/auth");
 const idValidation = async (req, res, next) => {
   const { contactId } = req.params;
   const { error } = validateIdContact({ contactId });
@@ -30,7 +30,7 @@ const idValidation = async (req, res, next) => {
   next();
 };
 
-router.get("/", async (req, res, next) => {
+router.get("/", auth, async (req, res, next) => {
   try {
     const contacts = await listContacts();
     res.json(contacts);
@@ -40,7 +40,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:contactId", idValidation, async (req, res, next) => {
+router.get("/:contactId", auth, idValidation, async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const contact = await getContactById(contactId);
@@ -51,7 +51,7 @@ router.get("/:contactId", idValidation, async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", auth, async (req, res, next) => {
   try {
     const { error } = validateCreateContact(req.body);
     if (error) {
@@ -66,7 +66,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", idValidation, async (req, res, next) => {
+router.delete("/:contactId", auth, idValidation, async (req, res, next) => {
   try {
     const { contactId } = req.params;
     await removeContact(contactId);
@@ -79,7 +79,7 @@ router.delete("/:contactId", idValidation, async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", idValidation, async (req, res, next) => {
+router.put("/:contactId", auth, idValidation, async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const { error } = validateUpdateContact(req.body);
@@ -95,7 +95,7 @@ router.put("/:contactId", idValidation, async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", idValidation, async (req, res, next) => {
+router.patch("/:contactId/favorite", auth, idValidation, async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const { error } = validateStatusUpdateContact(req.body);
