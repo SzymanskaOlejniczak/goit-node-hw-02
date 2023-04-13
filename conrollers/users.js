@@ -40,6 +40,11 @@ const updateSubscription = async (email, body) => {
   );
   return user;
 };
+
+const updateAvatar = async (email, avatarURL) => {
+  const user = await User.findOneAndUpdate({ email }, { avatarURL }, { new: true });
+  return user;
+};
 //logout usera
 const logout = async (token) => {
   const user = await User.findOneAndUpdate(
@@ -57,5 +62,6 @@ module.exports = {
   deleteUser,
   getUserByEmail,
   updateSubscription,
+  updateAvatar,
   logout,
 };
