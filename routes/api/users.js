@@ -1,10 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const multer =require("multer");
+// library to handle incoming files
+const multer = require("multer");
+// module for handling file paths
+const path = require("path");
+// file handling module
+const fs = require("fs/promises");
 
+const Jimp = require("jimp");
+const dotenv = require("dotenv");
+dotenv.config();
 const {
   getAllUsers,
   createUser,
+  updateAvatar,
   getUserById,
   deleteUser,
   getUserByEmail,
@@ -17,6 +26,23 @@ const {
   validateCreateUser,
 } = require("../../models/users");
 const auth = require("../../auth/auth");
+
+// we need to specify where the files are stored - FOLDER
+const uploadDirAvatar = path.join(process.cwd(), "tmp");
+// we need to initialize storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirAvatar);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+  limits: {
+    fileSize: 1048576,
+  },
+});
+// handle the image with multer
+const upload = multer({ storage });
 
 //***/ REGISTER/***/ Tworzymy usera
 router.post("/signup", async (req, res, next) => {
@@ -45,7 +71,7 @@ router.post("/signup", async (req, res, next) => {
 });
 
 //LOGIN//
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   // walidujemy poprawnosc danych
   const { email, password } = req.body;
   if (!email || !password) {
@@ -59,7 +85,8 @@ router.post("/login", async (req, res) => {
     // jesli logowanie poprawne to wydaj token
     return res.status(200).send(token);
   } catch (error) {
-    return res.status(error.code).send(error);
+    next(error);
+    return res.status(401).json({ message: "Invalid login data" });
   }
 });
 
@@ -103,7 +130,40 @@ router.patch("/", auth, async (req, res, next) => {
   }
 });
 
+router.patch("/avatars", auth, upload.single("avatar"),
+  async (req, res, next) => {
+    try {
+      const { email } = req.user;
+      // extract data about the incoming file
+      const { path: temporaryName, originalname } = req.file;
+      // create the absolute path to the target FILE
+      const fileName = path.join(uploadDirAvatar, originalname);
+      // replace the temporary name with the real one
+      await fs.rename(temporaryName, fileName);
+      console.log(fileName);
+      const img = await Jimp.read(fileName);
+      await img.autocrop().cover(250, 250).quality(60).writeAsync(fileName);
 
+      await fs.rename(
+        fileName,
+        path.join(process.cwd(), "public/avatars", originalname)
+      );
+
+      const avatarURL = path.join(
+        process.cwd(),
+        "public/avatars",
+        originalname
+      );
+      const cleanAvatarURL = avatarURL.replace(/\\/g, "/");
+
+      const user = await updateAvatar(email, cleanAvatarURL);
+      res.status(200).json(user);
+    } catch (error) {
+      next(error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 
 // pobieramy wszystkich - ZABEZPIECZONE AUTENTYKACJA
 router.get("/", auth, async (req, res) => {
@@ -114,7 +174,6 @@ router.get("/", auth, async (req, res) => {
     return res.status(500).send("Something went wrong");
   }
 });
-
 
 // pobieramy usera by id
 router.get("/:id", async (req, res) => {
@@ -136,7 +195,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
 // usuwanie usera
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
@@ -150,7 +208,5 @@ router.delete("/:id", async (req, res) => {
     return res.status(500).send("Something went wrong");
   }
 });
-
-
 
 module.exports = router;
