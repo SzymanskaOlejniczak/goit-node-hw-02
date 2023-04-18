@@ -5,30 +5,39 @@ const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
 const auth = async (req, res, next) => {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // pobieramy token z nagłówka
   const token = req.headers.authorization;
 
   // jeśli nie ma tokenu to nie puszamy dalej - mowimy ze brak tokenu
 =======
+=======
+>>>>>>> Stashed changes
   // get the token from the header
   const token = req.header("Authorization");
   console.log(token);
   // if there is no token, we do not continue - we say that there is no token
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   if (!token) {
     return res.status(401).send("No token provided");
   }
-
-  // jesli token jest to go weryfikujemy
+  // if the token exists, we verify it
   try {
 <<<<<<< Updated upstream
     jwt.verify(token, jwtSecretKey);
     req.user = jwt.decode(token);
+<<<<<<< Updated upstream
     // jesli wszystko poszło okay to wywołujemy next function
 =======
     
     jwt.verify(token, jwtSecretKey);
     req.user = jwt.decode(token);
+    // if everything went okay, we call next function
+>>>>>>> Stashed changes
+=======
     // if everything went okay, we call next function
 >>>>>>> Stashed changes
     try {
@@ -43,7 +52,7 @@ const auth = async (req, res, next) => {
 
     next();
   } catch {
-    // jesli cos nie tak to odmawiamy dostepu
+    // if something is wrong, we deny access
     return res.status(401).send("Access denied");
   }
 };
