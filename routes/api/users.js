@@ -44,23 +44,22 @@ const storage = multer.diskStorage({
 // handle the image with multer
 const upload = multer({ storage });
 
-//***/ REGISTER/***/ Tworzymy usera
+//***/ REGISTER/***/ Create user
 router.post("/signup", async (req, res, next) => {
   try {
-    // odpalamy walidacje
     const { error } = validateCreateUser(req.body);
     if (error) {
-      // jesli mamy blad walidacji to powiadamiamy uzytkownika
+      // if we have a validation error, we notify the user
       return res.status(400).json({ message: error.message });
     }
-    // mozemy wykonac destructure bo nasze body jest zwalidowane
+    // we can destructure because our body is validated
     const { email } = req.body;
-    // tworzymy usera
+    // create user
     const user = await getUserByEmail(email);
     if (user) {
       return res.status(409).json({ message: "Email in use" });
     }
-    // zwracamy nowo utworzonego usera
+    // return the newly created user
     const newUser = await createUser(req.body);
     res.status(201).json(newUser);
     console.log(newUser);
