@@ -1,8 +1,19 @@
 const express = require("express");
 const router = express.Router();
+// library to handle incoming files
+const multer = require("multer");
+// module for handling file paths
+const path = require("path");
+// file handling module
+const fs = require("fs/promises");
+
+const Jimp = require("jimp");
+const dotenv = require("dotenv");
+dotenv.config();
 const {
   getAllUsers,
   createUser,
+  updateAvatar,
   getUserById,
   deleteUser,
   getUserByEmail,
@@ -15,6 +26,24 @@ const {
   validateCreateUser,
 } = require("../../models/users");
 const auth = require("../../auth/auth");
+
+// we need to specify where the files are stored - FOLDER
+const uploadDirAvatar = path.join(process.cwd(), "tmp");
+// we need to initialize storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirAvatar);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+  limits: {
+    fileSize: 1048576,
+  },
+});
+// handle the image with multer
+const upload = multer({ storage });
+
 
 //***/ REGISTER/***/ Create user
 router.post("/signup", async (req, res, next) => {
@@ -99,6 +128,40 @@ router.patch("/", auth, async (req, res, next) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+router.patch("/avatars", auth, upload.single("avatar"),
+  async (req, res, next) => {
+    try {
+      const { email } = req.user;
+      // extract data about the incoming file
+      const { path: temporaryName, originalname } = req.file;
+      // create the absolute path to the target FILE
+      const fileName = path.join(uploadDirAvatar, originalname);
+      // replace the temporary name with the real one
+      await fs.rename(temporaryName, fileName);
+      console.log(fileName);
+      const img = await Jimp.read(fileName);
+      await img.autocrop().cover(250, 250).quality(60).writeAsync(fileName);
+
+      await fs.rename(
+        fileName,
+        path.join(process.cwd(), "public/avatars", originalname)
+      );
+
+      const avatarURL = path.join(
+        process.cwd(),
+        "public/avatars",
+        originalname
+      );
+      const cleanAvatarURL = avatarURL.replace(/\\/g, "/");
+
+      const user = await updateAvatar(email, cleanAvatarURL);
+      res.status(200).json(user);
+    } catch (error) {
+      next(error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 
 // download all - SECURE AUTHENTICATION
 router.get("/", auth, async (req, res) => {
