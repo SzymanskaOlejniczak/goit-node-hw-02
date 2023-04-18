@@ -1,11 +1,13 @@
 const { User, hashPassword } = require("../models/users");
+const gravatar = require("gravatar");
 
 const createUser = async (body) => {
   const { email, password } = body;
-  // hash the password
+  // haszujemy hasło
   const hashedPassword = hashPassword(password);
-// create a user with a hashed password
-  const newUser = await User.create({ email, password: hashedPassword });
+  const avatarURL = gravatar.url(email, {s: "250", d: "404" });
+  // tworzymy usera z zahaszowanym hasłem
+  const newUser = await User.create({ email, password: hashedPassword, avatarURL });
   return newUser;
 };
 const getUserByEmail = async (email) => {
@@ -29,7 +31,7 @@ const deleteUser = async (_id) => {
   }
 };
 
-// we update the subscription user
+// updatujemy subscription usera
 
 const updateSubscription = async (email, body) => {
   const { subscription } = body;
@@ -40,7 +42,12 @@ const updateSubscription = async (email, body) => {
   );
   return user;
 };
-//logout user
+
+const updateAvatar = async (email, avatarURL) => {
+  const user = await User.findOneAndUpdate({ email }, { avatarURL }, { new: true });
+ return user;
+};
+//logout usera
 const logout = async (token) => {
   const user = await User.findOneAndUpdate(
     { token },
@@ -57,5 +64,6 @@ module.exports = {
   deleteUser,
   getUserByEmail,
   updateSubscription,
+  updateAvatar,
   logout,
 };
