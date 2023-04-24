@@ -66,24 +66,25 @@ router.post("/signup", async (req, res, next) => {
     const newUser = await createUser(req.body);
    
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
+      host: "smtp.ethereal.email",
       port: 587,
       secure: false,
       auth: {
-        user: 'sonny.koss@ethereal.email',
-        pass: 'hwp1av9CHSBWvDUSUf'
+        user: "sonny.koss@ethereal.email",
+        pass: "hwp1av9CHSBWvDUSUf"
       },
     
   });
-    const emailOptions = {
-      from: 'sonny.koss@ethereal.email',
-      to: ['${email}'],
-      subject: "Verification",
-      html: `<h1>Please verify your email adress by clicking verification link below<h1>
-    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
-    };
   
-    await transporter.sendMail(emailOptions);
+    await transporter.sendMail(
+      {
+        from: { name: "Aga 👨‍💻", address: "sonny.koss@ethereal.email" },
+        to: [`${email}`],
+        subject: "Verification",
+        html: `<h1>Please verify your email adress by clicking verification link below<h1>
+      <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
+      }
+    );
 
 		res.status(201).json(newUser);
     console.log(newUser);
@@ -117,6 +118,7 @@ router.post("/login", async (req, res, next) => {
 router.get("/logout", auth, async (req, res, next) => {
   try {
     const { token } = req.body;
+
     const user = await logout(token);
     res.status(204).json(user);
   } catch (error) {
@@ -204,24 +206,26 @@ router.post("/verify", async (req, res, next) => {
     }
 
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
+      host: "smtp.ethereal.email",
       port: 587,
       secure: false,
       auth: {
-        user: 'sonny.koss@ethereal.email',
-        pass: 'hwp1av9CHSBWvDUSUf'
+        user: "sonny.koss@ethereal.email",
+        pass: "hwp1av9CHSBWvDUSUf"
       },
     
   });
-    const emailOptions = {
-      from: 'sonny.koss@ethereal.email',
-      to: ['${email}'],
-      subject: "Verification",
-      html: `<h1>Please verify your email adress by clicking verification link below<h1>
-    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
-    };
+
   
-    await transporter.sendMail(emailOptions);
+    await transporter.sendMail(
+      {
+        from: { name: "Aga 👨‍💻", address: "sonny.koss@ethereal.email" },
+        to:[`${email}`],
+        subject: "Verification",
+        html: `<h1>Please verify your email adress by clicking verification link below<h1>
+      <div><a href='http://localhost:3000/api/users/verify/${user.verifyToken}'>verification link</a></div>`,
+      }
+    );
 
    res.status(200).json({ message: "Verification email sent" });
    } catch (error) {
