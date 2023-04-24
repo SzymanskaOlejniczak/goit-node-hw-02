@@ -84,7 +84,7 @@ router.post("/signup", async (req, res, next) => {
     };
   
     await transporter.sendMail(emailOptions);
-    
+
 		res.status(201).json(newUser);
     console.log(newUser);
   } catch (error) {
@@ -211,7 +211,7 @@ router.post("/verify", async (req, res, next) => {
         user: "aszymanskaolejniczak",
         pass: "Edward1234!@",
       },
-      tls:{rejectUnauthorized:false},
+    
   });
     const emailOptions = {
       from: "aszymanskaolejniczak@interia.pl",
@@ -222,6 +222,7 @@ router.post("/verify", async (req, res, next) => {
     };
   
     await transporter.sendMail(emailOptions);
+    
    res.status(200).json({ message: "Verification email sent" });
    } catch (error) {
      next(error);
