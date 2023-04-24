@@ -66,21 +66,21 @@ router.post("/signup", async (req, res, next) => {
     const newUser = await createUser(req.body);
    
     const transporter = nodemailer.createTransport({
-      host: "smtp.interia.pl",
-      port: 465,
+      host: 'smtp.ethereal.email',
+      port: 587,
       secure: false,
       auth: {
-        user: "aszymanskaolejniczak",
-        pass: "Edward1234!@",
+        user: 'sonny.koss@ethereal.email',
+        pass: 'hwp1av9CHSBWvDUSUf'
       },
-      
+    
   });
     const emailOptions = {
-      from: "aszymanskaolejniczak@interia.pl",
-      to: "aszymanska-olejniczak@wp.pl  ",
+      from: 'sonny.koss@ethereal.email',
+      to: ['${email}'],
       subject: "Verification",
       html: `<h1>Please verify your email adress by clicking verification link below<h1>
-    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'></a></div>`,
+    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
     };
   
     await transporter.sendMail(emailOptions);
@@ -204,25 +204,25 @@ router.post("/verify", async (req, res, next) => {
     }
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.interia.pl",
-      port: 465,
+      host: 'smtp.ethereal.email',
+      port: 587,
       secure: false,
       auth: {
-        user: "aszymanskaolejniczak",
-        pass: "Edward1234!@",
+        user: 'sonny.koss@ethereal.email',
+        pass: 'hwp1av9CHSBWvDUSUf'
       },
     
   });
     const emailOptions = {
-      from: "aszymanskaolejniczak@interia.pl",
-      to: "aszymanska-olejniczak@wp.pl  ",
+      from: 'sonny.koss@ethereal.email',
+      to: ['${email}'],
       subject: "Verification",
       html: `<h1>Please verify your email adress by clicking verification link below<h1>
     <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
     };
   
     await transporter.sendMail(emailOptions);
-    
+
    res.status(200).json({ message: "Verification email sent" });
    } catch (error) {
      next(error);
@@ -245,6 +245,10 @@ router.get("/verify/:verificationToken", async (req, res, next) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+
+
+
 
 // download all - SECURE AUTHENTICATION
 router.get("/", auth, async (req, res) => {
