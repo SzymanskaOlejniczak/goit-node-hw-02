@@ -6,14 +6,15 @@ const multer = require("multer");
 const path = require("path");
 // file handling module
 const fs = require("fs/promises");
-
 const Jimp = require("jimp");
+const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 const {
   getAllUsers,
   createUser,
   updateAvatar,
+  verifyUser,
   getUserById,
   deleteUser,
   getUserByEmail,
@@ -26,6 +27,7 @@ const {
   validateCreateUser,
 } = require("../../models/users");
 const auth = require("../../auth/auth");
+
 
 // we need to specify where the files are stored - FOLDER
 const uploadDirAvatar = path.join(process.cwd(), "tmp");
@@ -62,7 +64,28 @@ router.post("/signup", async (req, res, next) => {
     }
     // return the newly created user
     const newUser = await createUser(req.body);
-    res.status(201).json(newUser);
+   
+    const transporter = nodemailer.createTransport({
+      host: "smtp.interia.pl",
+      port: 465,
+      secure: false,
+      auth: {
+        user: "aszymanskaolejniczak",
+        pass: "Edward1234!@",
+      },
+      
+  });
+    const emailOptions = {
+      from: "aszymanskaolejniczak@interia.pl",
+      to: "aszymanska-olejniczak@wp.pl  ",
+      subject: "Verification",
+      html: `<h1>Please verify your email adress by clicking verification link below<h1>
+    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'></a></div>`,
+    };
+  
+    await transporter.sendMail(emailOptions);
+    
+		res.status(201).json(newUser);
     console.log(newUser);
   } catch (error) {
     next(error);
@@ -71,7 +94,7 @@ router.post("/signup", async (req, res, next) => {
 });
 
 //LOGIN//
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   // we validate the correctness of the data
   const { email, password } = req.body;
   if (!email || !password) {
@@ -85,6 +108,7 @@ router.post("/login", async (req, res) => {
     // if the login is correct, issue a token
     return res.status(200).send(token);
   } catch (error) {
+    next(error);
     return res.status(error.code).send(error);
   }
 });
@@ -162,6 +186,64 @@ router.patch("/avatars", auth, upload.single("avatar"),
     }
   }
 );
+
+router.post("/verify", async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Missing required field email" });
+    }
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res.status(400).json({ message: "Verification has already been passed" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.interia.pl",
+      port: 465,
+      secure: false,
+      auth: {
+        user: "aszymanskaolejniczak",
+        pass: "Edward1234!@",
+      },
+      tls:{rejectUnauthorized:false},
+  });
+    const emailOptions = {
+      from: "aszymanskaolejniczak@interia.pl",
+      to: "aszymanska-olejniczak@wp.pl  ",
+      subject: "Verification",
+      html: `<h1>Please verify your email adress by clicking verification link below<h1>
+    <div><a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>verification link</a></div>`,
+    };
+  
+    await transporter.sendMail(emailOptions);
+   res.status(200).json({ message: "Verification email sent" });
+   } catch (error) {
+     next(error);
+     return res.status(500).json({ message: "Server error" });
+   }
+ });
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await verifyUser(verificationToken);
+
+    if (user) {
+      return res.status(200).json({ message: "Verification successful" });
+    } else {
+      return res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    next(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
 
 // download all - SECURE AUTHENTICATION
 router.get("/", auth, async (req, res) => {
