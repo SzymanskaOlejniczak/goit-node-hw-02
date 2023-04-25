@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { getUserByEmail } = require("../conrollers/users");
 const issueToken = require("./issueToken");
 
-const loginHandler = async (email, incomingPassword) => {
+const loginHandler = async (email, password) => {
  // get the user
   const user = await getUserByEmail(email);
 
@@ -11,12 +11,11 @@ const loginHandler = async (email, incomingPassword) => {
   if (!user) {
     throw { code: 404, msg: "User not found!!!" };
   }
-
- // get our user's password
-  const userPassword = user.password;
-
+  if (!user.verify) {
+		throw new Error('Email not verified !');
+	}
 // compare passwords (incoming and user's)
-  const result = bcrypt.compareSync(incomingPassword, userPassword);
+  const result = bcrypt.compareSync(password, user.password);
 
 // we return the token
   if (result) {

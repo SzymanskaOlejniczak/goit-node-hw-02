@@ -30,11 +30,16 @@ const users = new Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
-  {
-    versionKey: false,
-    timestamps: true,
-  }
+ 
 );
 
 const hashPassword = (password) => {
@@ -52,7 +57,7 @@ const validator = (schema) => (payload) =>
 const userValidationSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  subscription: Joi.string().valid("starter", "pro", "business"),
+  //subscription: Joi.string().valid("starter", "pro", "business"),
 });
 const userUpdatedValidationSchema = Joi.object({
   subscription: Joi.string().valid("starter", "pro", "business").required(),
