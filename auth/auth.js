@@ -13,15 +13,18 @@ const auth = async (req, res, next) => {
   }
   // if the token exists, we verify it
   try {
-    req.user = jwt.decode(token);
     jwt.verify(token, jwtSecretKey);
-    
+    req.user = jwt.decode(token);
     // if everything went okay, we call next function
     try {
       const user = await getUserByEmail(req.user.email);
+      
       if (!user) {
         return res.status(401).json({ message: "Not authorized" });
       }
+      if (!user.verify) {
+				return res.status(401).json({ message: 'Email is not verified' });
+			}
     } catch (error) {
       return res.status(401).json({ message: "Not authorized" });
     }
