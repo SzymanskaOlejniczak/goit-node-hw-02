@@ -85,40 +85,18 @@ router.post('/signup', async (req, res, next) => {
         subject: 'Verification',
         text: 'Mail with verification link',
         html,
-      }
+      },
     );
 		res.status(201).json(newUser);
 	} catch (error) {
 		next(error);
-		return res.status(500).json({ message: 'Server error' });
+		return res.status(500).json( {message: error.message} );
 	}
 });
-// router.post("/signup", async (req, res, next) => {
-//   try {
-//     const { error } = validateCreateUser(req.body);
-//     if (error) {
-//       // if we have a validation error, we notify the user
-//       return res.status(400).json({ message: error.message });
-//     }
-//     // we can destructure because our body is validated
-//     const { email } = req.body;
-//     // create user
-//     const user = await getUserByEmail(email);
-//     if (user) {
-//       return res.status(409).json({ message: "Email in use" });
-//     }
-//     // return the newly created user
-//     const newUser = await createUser(req.body);
-//     res.status(201).json(newUser);
-//     console.log(newUser);
-//   } catch (error) {
-//     next(error);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// });
+
 
 //LOGIN//
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   // we validate the correctness of the data
   const { email, password } = req.body;
   if (!email || !password) {
@@ -130,9 +108,10 @@ router.post("/login", async (req, res) => {
     const token = await loginHandler(email, password);
 
     // if the login is correct, issue a token
-    return res.status(200).send(token);
+    res.status(200).json({token});
   } catch (error) {
-    return res.status(error.code).send(error);
+    next(error);
+    return res.status(401).json({message:"Invalid login data"});
   }
 });
 
