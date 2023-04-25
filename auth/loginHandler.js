@@ -11,6 +11,9 @@ const loginHandler = async (email, incomingPassword) => {
   if (!user) {
     throw { code: 404, msg: "User not found!!!" };
   }
+  if (!user.verify) {
+		throw new Error('Email not verified !');
+	}
 
  // get our user's password
   const userPassword = user.password;
