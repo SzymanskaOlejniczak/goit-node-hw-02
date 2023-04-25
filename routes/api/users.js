@@ -6,14 +6,15 @@ const multer = require("multer");
 const path = require("path");
 // file handling module
 const fs = require("fs/promises");
-
 const Jimp = require("jimp");
+const nodemailer = require('nodemailer');
 const dotenv = require("dotenv");
 dotenv.config();
 const {
   getAllUsers,
   createUser,
   updateAvatar,
+  verifyUser,
   getUserById,
   deleteUser,
   getUserByEmail,
@@ -46,29 +47,75 @@ const upload = multer({ storage });
 
 
 //***/ REGISTER/***/ Create user
-router.post("/signup", async (req, res, next) => {
-  try {
-    const { error } = validateCreateUser(req.body);
-    if (error) {
-      // if we have a validation error, we notify the user
-      return res.status(400).json({ message: error.message });
-    }
-    // we can destructure because our body is validated
-    const { email } = req.body;
-    // create user
-    const user = await getUserByEmail(email);
-    if (user) {
-      return res.status(409).json({ message: "Email in use" });
-    }
-    // return the newly created user
-    const newUser = await createUser(req.body);
-    res.status(201).json(newUser);
-    console.log(newUser);
-  } catch (error) {
-    next(error);
-    return res.status(500).json({ message: "Server error" });
-  }
+router.post('/signup', async (req, res, next) => {
+	try {
+		const { error } = validateCreateUser(req.body);
+		if (error) {
+			return res.status(400).json({ message: error.message });
+		}
+
+		const { email } = req.body;
+		const user = await getUserByEmail(email);
+		if (user) {
+			return res.status(409).json({ message: 'Email in use' });
+		}
+
+		const newUser = await createUser(req.body);
+
+		const transporter = nodemailer.createTransport({
+			host: 'smtp.ethereal.email',
+			port: 587,
+			secure: false,
+			auth: {
+				user: "patrick58@ethereal.email",
+				pass: "5tPnCsPp5wXc9VPhJ8",
+			},
+		});
+
+		const html = `
+    		<div>
+    			<p>Click on the link below to verify your account</p>
+    			<a href='http://localhost:3000/api/users/verify/${newUser.verifyToken}'>VERIFY</a>
+    		</div>`;
+
+		await transporter.sendMail(
+      {
+        from: '"Aga" <patrick58@ethereal.email>',
+        to: [`${email}`],
+        subject: 'Verification',
+        text: 'Mail with verification link',
+        html,
+      }
+    );
+		res.status(201).json(newUser);
+	} catch (error) {
+		next(error);
+		return res.status(500).json({ message: 'Server error' });
+	}
 });
+// router.post("/signup", async (req, res, next) => {
+//   try {
+//     const { error } = validateCreateUser(req.body);
+//     if (error) {
+//       // if we have a validation error, we notify the user
+//       return res.status(400).json({ message: error.message });
+//     }
+//     // we can destructure because our body is validated
+//     const { email } = req.body;
+//     // create user
+//     const user = await getUserByEmail(email);
+//     if (user) {
+//       return res.status(409).json({ message: "Email in use" });
+//     }
+//     // return the newly created user
+//     const newUser = await createUser(req.body);
+//     res.status(201).json(newUser);
+//     console.log(newUser);
+//   } catch (error) {
+//     next(error);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// });
 
 //LOGIN//
 router.post("/login", async (req, res) => {
@@ -163,6 +210,73 @@ router.patch("/avatars", auth, upload.single("avatar"),
   }
 );
 
+router.get('/verify/:verificationToken', async (req, res, next) => {
+	try {
+		const { verificationToken } = req.params;
+		const user = await verifyUser(verificationToken);
+
+		if (user) {
+			return res.status(200).json({ message: 'Verification successful' });
+		} else {
+			return res.status(404).json({ message: 'User not found' });
+		}
+	} catch (error) {
+		next(error);
+		return res.status(500).json({ message: 'Server error' });
+	}
+});
+
+router.post('/verify', async (req, res, next) => {
+	try {
+		const { email } = req.body;
+		if (!email) {
+			return res.status(400).json({ message: 'Missing required field email' });
+		}
+
+		const user = await getUserByEmail(email);
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		if (user.verify) {
+			return res
+				.status(400)
+				.json({ message: 'Verification has already been passed' });
+		}
+
+		const transporter = nodemailer.createTransport({
+			host: 'smtp.ethereal.email',
+			port: 587,
+			secure: false,
+			auth: {
+				user: "patrick58@ethereal.email",
+				pass: "5tPnCsPp5wXc9VPhJ8",
+			},
+		});
+
+		const html = `
+    	<div>
+    		<h1>Verification</h1>
+    		<p>Click on the link below to verify your account</p>
+    		<a href='http://localhost:3000/api/users/verify/${user.verifyToken}'>VERIFY</a>
+    	</div>`;
+
+		await transporter.sendMail(
+      {
+        from: '"Aga" <patrick58@ethereal.email>',
+        to: [`${email}`],
+        subject: 'Verification',
+        text: 'Mail with verification link',
+        html,
+      }
+    );
+
+		res.status(200).json({ message: 'Verification email sent' });
+	} catch (error) {
+		next(error);
+		return res.status(500).json({ message: 'Server error' });
+	}
+});
 // download all - SECURE AUTHENTICATION
 router.get("/", auth, async (req, res) => {
   try {
